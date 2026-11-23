@@ -1,0 +1,135 @@
+### Colección de pruebas — Granja lechera API
+### Ejecuta las solicitudes en orden para reproducir el escenario de referencia (§8 del taller).
+### Antes de empezar, borra granja.db para partir de una base limpia.
+
+@host = http://localhost:5161
+
+### Configuración de la granja (n, l y parámetros)
+GET {{host}}/api/granja
+
+### Actualizar la configuración (n = 10, l = 15)
+PUT {{host}}/api/granja
+Content-Type: application/json
+
+{
+  "numeroVacas": 10,
+  "litrosPorVaca": 15,
+  "parametros": [
+    { "tipo": "Queso",  "rendimiento": 10, "vidaUtilDias": 30, "precio": 28000, "unidad": "kg" },
+    { "tipo": "Yogurt", "rendimiento": 1,  "vidaUtilDias": 15, "precio": 6000,  "unidad": "L" }
+  ]
+}
+
+### Listado de vacas
+GET {{host}}/api/vacas
+
+### Día 1 — producción de leche (150 L)
+POST {{host}}/api/produccion
+Content-Type: application/json
+
+{ "fecha": "2026-12-01" }
+
+### Día 1 — segunda vez la misma fecha → 409
+POST {{host}}/api/produccion
+Content-Type: application/json
+
+{ "fecha": "2026-12-01" }
+
+### Día 1 — 100 L a queso (Lote Q1: 10 kg)
+POST {{host}}/api/produccion/transformaciones
+Content-Type: application/json
+
+{ "fecha": "2026-12-01", "tipoProducto": "Queso", "litros": 100 }
+
+### Día 1 — 50 L a yogurt (Lote Y1: 50 L, vence el 2026-12-16)
+POST {{host}}/api/produccion/transformaciones
+Content-Type: application/json
+
+{ "fecha": "2026-12-01", "tipoProducto": "Yogurt", "litros": 50 }
+
+### Día 1 — transformar más leche de la producida → 409
+POST {{host}}/api/produccion/transformaciones
+Content-Type: application/json
+
+{ "fecha": "2026-12-01", "tipoProducto": "Yogurt", "litros": 1 }
+
+### Día 2 — producción de leche
+POST {{host}}/api/produccion
+Content-Type: application/json
+
+{ "fecha": "2026-12-02" }
+
+### Día 2 — 150 L a queso (Lote Q2: 15 kg)
+POST {{host}}/api/produccion/transformaciones
+Content-Type: application/json
+
+{ "fecha": "2026-12-02", "tipoProducto": "Queso", "litros": 150 }
+
+### Producción del día 1
+GET {{host}}/api/produccion/2026-12-01
+
+### Día 3 — venta de 12 kg de queso (10 de Q1 + 2 de Q2)
+POST {{host}}/api/ventas
+Content-Type: application/json
+
+{ "tipoProducto": "Queso", "cantidad": 12, "fecha": "2026-12-03" }
+
+### Día 3 — venta de 20 L de yogurt (quedan 30 L en Y1)
+POST {{host}}/api/ventas
+Content-Type: application/json
+
+{ "tipoProducto": "Yogurt", "cantidad": 20, "fecha": "2026-12-03" }
+
+### Inventario y resumen
+GET {{host}}/api/inventario?fecha=2026-12-03
+
+###
+GET {{host}}/api/inventario/resumen?fecha=2026-12-03
+
+### Alerta de lotes próximos a vencer (3 días) al 2026-12-14
+GET {{host}}/api/inventario/proximos-a-vencer?dias=3&fecha=2026-12-14
+
+### Día 17 — procesar vencimientos (Y1: 30 L pasan a dañado)
+POST {{host}}/api/inventario/procesar-vencimientos
+Content-Type: application/json
+
+{ "fecha": "2026-12-17" }
+
+### Día 17 — venta de 5 L de yogurt → 409
+POST {{host}}/api/ventas
+Content-Type: application/json
+
+{ "tipoProducto": "Yogurt", "cantidad": 5, "fecha": "2026-12-17" }
+
+### Consultar una venta / venta inexistente → 404
+GET {{host}}/api/ventas/1
+
+###
+GET {{host}}/api/ventas/99
+
+### Validación → 400
+POST {{host}}/api/ventas
+Content-Type: application/json
+
+{ "tipoProducto": "Queso", "cantidad": 0 }
+
+### ===== Reportes =====
+GET {{host}}/api/reportes/ventas?desde=2026-12-01&hasta=2026-12-31
+
+###
+GET {{host}}/api/reportes/ventas?tipo=Queso
+
+###
+GET {{host}}/api/reportes/leche-diaria?desde=2026-12-01&hasta=2026-12-31
+
+###
+GET {{host}}/api/reportes/producto-diario?desde=2026-12-01&hasta=2026-12-31
+
+###
+GET {{host}}/api/reportes/producto-total
+
+###
+GET {{host}}/api/reportes/producto-danado?desde=2026-12-01&hasta=2026-12-31
+
+###
+GET {{host}}/api/reportes/vacas

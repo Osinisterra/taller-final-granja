@@ -25,12 +25,17 @@ public class InventarioService : IInventarioService
         _mapper = mapper;
     }
 
-    public async Task<IReadOnlyList<LoteResponse>> ListarLotesAsync(TipoProducto? tipo, bool soloDisponibles, DateOnly? fecha, CancellationToken ct = default)
+    public async Task<PaginaResponse<LoteResponse>> ListarLotesAsync(FiltroLotesRequest filtro, CancellationToken ct = default)
     {
-        var dia = fecha ?? _clock.Today;
-        var lotes = await _lotes.BuscarAsync(tipo, null, null, ct);
-        if (soloDisponibles) lotes = lotes.Where(l => l.EsVendible(dia)).ToList();
-        return Mapear(lotes, dia);
+        Paginador.Salto(filtro);
+        Validaciones.Rango(filtro.Desde, filtro.Hasta);
+        var dia = filtro.Fecha ?? _clock.Today;
+
+        IEnumerable<Domain.Entities.LoteProducto> lotes = await _lotes.BuscarAsync(filtro.Tipo, filtro.Desde, filtro.Hasta, ct);
+        if (filtro.SoloDisponibles) lotes = lotes.Where(l => l.EsVendible(dia));
+        if (filtro.Estado is { } estado) lotes = lotes.Where(l => l.Estado(dia) == estado);
+
+        return Paginador.Paginar(Mapear(lotes, dia), filtro);
     }
 
     public async Task<LoteResponse> ObtenerLoteAsync(int id, DateOnly? fecha, CancellationToken ct = default)

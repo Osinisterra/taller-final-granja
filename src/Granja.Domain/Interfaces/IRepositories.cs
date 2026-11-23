@@ -39,4 +39,6 @@ public interface IVentaRepository : IRepository<Venta>
 {
     Task<Venta?> ObtenerConDetalleAsync(int id, CancellationToken ct = default);
     Task<IReadOnlyList<Venta>> BuscarAsync(DateOnly? desde, DateOnly? hasta, TipoProducto? tipo, CancellationToken ct = default);
+    /// <summary>Búsqueda con filtros avanzados, orden y paginación ejecutada en la base de datos.</summary>
+    Task<(IReadOnlyList<Venta> Items, int Total)> BuscarPaginadoAsync(FiltroVentas filtro, int saltar, int tomar, CancellationToken ct = default);
 }

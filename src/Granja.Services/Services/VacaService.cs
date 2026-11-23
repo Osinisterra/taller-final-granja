@@ -17,8 +17,12 @@ public class VacaService : IVacaService
         _mapper = mapper;
     }
 
-    public async Task<IReadOnlyList<VacaResponse>> ListarAsync(bool incluirInactivas, CancellationToken ct = default) =>
-        _mapper.Map<List<VacaResponse>>(await _vacas.ListarConProduccionAsync(!incluirInactivas, ct));
+    public async Task<PaginaResponse<VacaResponse>> ListarAsync(bool incluirInactivas, PaginacionRequest paginacion, CancellationToken ct = default)
+    {
+        Paginador.Salto(paginacion);
+        var vacas = _mapper.Map<List<VacaResponse>>(await _vacas.ListarConProduccionAsync(!incluirInactivas, ct));
+        return Paginador.Paginar(vacas, paginacion);
+    }
 
     public async Task<VacaResponse> ObtenerAsync(int id, CancellationToken ct = default)
     {

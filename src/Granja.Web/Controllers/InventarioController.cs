@@ -1,4 +1,3 @@
-using Granja.Domain.Enums;
 using Granja.Services.Dtos;
 using Granja.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +14,12 @@ public class InventarioController : ControllerBase
 
     public InventarioController(IInventarioService service) => _service = service;
 
-    /// <summary>Lista los lotes del inventario (opcionalmente por tipo y solo los vendibles a la fecha).</summary>
+    /// <summary>Lista paginada de lotes con filtros por tipo, estado, rango de producción y solo vendibles.</summary>
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<LoteResponse>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<LoteResponse>>> Listar([FromQuery] TipoProducto? tipo, [FromQuery] bool soloDisponibles = false,
-        [FromQuery] DateOnly? fecha = null, CancellationToken ct = default) =>
-        Ok(await _service.ListarLotesAsync(tipo, soloDisponibles, fecha, ct));
+    [ProducesResponseType<PaginaResponse<LoteResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginaResponse<LoteResponse>>> Listar([FromQuery] FiltroLotesRequest filtro, CancellationToken ct) =>
+        Ok(await _service.ListarLotesAsync(filtro, ct));
 
     /// <summary>Consulta un lote por id.</summary>
     [HttpGet("{id:int}")]

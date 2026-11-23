@@ -66,11 +66,17 @@ public class ProduccionService : IProduccionService
 
     public async Task<ProduccionDiaResponse> ObtenerDiaAsync(DateOnly fecha, CancellationToken ct = default)
     {
-        var dia = (await ListarAsync(fecha, fecha, ct)).FirstOrDefault();
+        var dia = (await ResumirDiasAsync(fecha, fecha, ct)).FirstOrDefault();
         return dia ?? throw new EntidadNoEncontradaException("producción de leche para la fecha", fecha.ToString("yyyy-MM-dd"));
     }
 
-    public async Task<IReadOnlyList<ProduccionDiaResponse>> ListarAsync(DateOnly? desde, DateOnly? hasta, CancellationToken ct = default)
+    public async Task<PaginaResponse<ProduccionDiaResponse>> ListarAsync(DateOnly? desde, DateOnly? hasta, PaginacionRequest paginacion, CancellationToken ct = default)
+    {
+        Paginador.Salto(paginacion);
+        return Paginador.Paginar(await ResumirDiasAsync(desde, hasta, ct), paginacion);
+    }
+
+    private async Task<IReadOnlyList<ProduccionDiaResponse>> ResumirDiasAsync(DateOnly? desde, DateOnly? hasta, CancellationToken ct)
     {
         Validaciones.Rango(desde, hasta);
         var producciones = await _producciones.ListarAsync(desde, hasta, ct);

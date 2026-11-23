@@ -14,11 +14,13 @@ public class VacasController : ControllerBase
 
     public VacasController(IVacaService service) => _service = service;
 
-    /// <summary>Listado de vacas con su producción acumulada.</summary>
+    /// <summary>Listado paginado de vacas con su producción acumulada.</summary>
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<VacaResponse>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<VacaResponse>>> Listar([FromQuery] bool incluirInactivas = false, CancellationToken ct = default) =>
-        Ok(await _service.ListarAsync(incluirInactivas, ct));
+    [ProducesResponseType<PaginaResponse<VacaResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginaResponse<VacaResponse>>> Listar([FromQuery] PaginacionRequest paginacion,
+        [FromQuery] bool incluirInactivas = false, CancellationToken ct = default) =>
+        Ok(await _service.ListarAsync(incluirInactivas, paginacion, ct));
 
     /// <summary>Consulta una vaca por id.</summary>
     [HttpGet("{id:int}")]

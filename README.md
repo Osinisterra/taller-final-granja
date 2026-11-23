@@ -102,6 +102,17 @@ Los listados de ventas, inventario, vacas y producción reciben `pagina` (desde 
 - Las ventas se filtran, ordenan y paginan directamente en la base de datos (`IVentaRepository.BuscarPaginadoAsync` usa `Skip`/`Take`).
 - En el inventario el estado de un lote depende de la fecha de evaluación y lo calcula el dominio, así que ese listado se pagina en memoria.
 
+### Manejo de errores
+
+Todas las respuestas de error usan `ProblemDetails` (`application/problem+json`):
+
+| Situación | Código |
+|---|---|
+| Validación de DTOs o `DomainException` (datos inválidos) | 400 |
+| `EntidadNoEncontradaException` (venta, lote, vaca o producción inexistente) | 404 |
+| `ReglaNegocioException`: producción duplicada, leche insuficiente o inventario insuficiente | 409 |
+| Error no controlado | 500 |
+
 ## Cómo ejecutar
 
 Requisitos: SDK de .NET 10.
@@ -115,6 +126,29 @@ dotnet run --project src/Granja.Web --launch-profile http
 - Swagger: <http://localhost:5161/swagger>. La raíz `/` redirige allí.
 - Al arrancar se aplican las migraciones y, si la base está vacía, se crean la granja y las n vacas. La base SQLite queda en `src/Granja.Web/granja.db`; bórrala para empezar de cero.
 
+### Colección de pruebas
+
+`src/Granja.Web/Granja.Web.http` 
+
+### Migraciones
+
+La herramienta se instala una sola vez con:
+
+```bash
+dotnet tool install --global dotnet-ef --version 10.0.11
+```
+
+Crear una migración nueva:
+
+```bash
+dotnet ef migrations add NombreMigracion --project src/Granja.Infrastructure --startup-project src/Granja.Web --output-dir Data/Migrations
+```
+
+Aplicarla a la base de datos:
+
+```bash
+dotnet ef database update --project src/Granja.Infrastructure --startup-project src/Granja.Web
+```
 
 ## Pruebas unitarias
 

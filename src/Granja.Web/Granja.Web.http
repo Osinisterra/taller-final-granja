@@ -133,3 +133,38 @@ GET {{host}}/api/reportes/producto-danado?desde=2026-12-01&hasta=2026-12-31
 
 ###
 GET {{host}}/api/reportes/vacas
+
+### ===== Extensiones opcionales (§12) =====
+
+### Exportar reportes a CSV
+GET {{host}}/api/reportes/producto-total/csv
+
+###
+GET {{host}}/api/reportes/ventas/csv?desde=2026-12-01&hasta=2026-12-31
+
+###
+GET {{host}}/api/reportes/leche-diaria/csv
+
+###
+GET {{host}}/api/reportes/vacas/csv
+
+### Reporte desconocido → 400
+GET {{host}}/api/reportes/nada/csv
+
+### Ventas paginadas, ordenadas por total descendente
+GET {{host}}/api/ventas?ordenarPor=Total&descendente=true&pagina=1&tamanoPagina=1
+
+### Ventas filtradas por tipo y cantidad mínima
+GET {{host}}/api/ventas?tipo=Yogurt&cantidadMinima=10
+
+### Inventario: lotes vencidos al 2026-12-17
+GET {{host}}/api/inventario?estado=Vencido&fecha=2026-12-17
+
+### Inventario: queso vendible producido el 2026-12-02
+GET {{host}}/api/inventario?tipo=Queso&soloDisponibles=true&desde=2026-12-02&hasta=2026-12-02&fecha=2026-12-17
+
+### Vacas paginadas
+GET {{host}}/api/vacas?pagina=2&tamanoPagina=3
+
+### Tamaño de página inválido → 400
+GET {{host}}/api/vacas?tamanoPagina=500

@@ -24,11 +24,13 @@ public class ProduccionController : ControllerBase
         return CreatedAtAction(nameof(ObtenerDia), new { fecha = resultado.Fecha.ToString("yyyy-MM-dd") }, resultado);
     }
 
-    /// <summary>Lista la producción por día en un rango de fechas.</summary>
+    /// <summary>Lista paginada de la producción por día en un rango de fechas.</summary>
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<ProduccionDiaResponse>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<ProduccionDiaResponse>>> Listar([FromQuery] DateOnly? desde, [FromQuery] DateOnly? hasta, CancellationToken ct) =>
-        Ok(await _service.ListarAsync(desde, hasta, ct));
+    [ProducesResponseType<PaginaResponse<ProduccionDiaResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginaResponse<ProduccionDiaResponse>>> Listar([FromQuery] DateOnly? desde, [FromQuery] DateOnly? hasta,
+        [FromQuery] PaginacionRequest paginacion, CancellationToken ct) =>
+        Ok(await _service.ListarAsync(desde, hasta, paginacion, ct));
 
     /// <summary>Consulta la producción de una fecha (producidos, transformados y disponibles).</summary>
     [HttpGet("{fecha}")]

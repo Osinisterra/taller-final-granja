@@ -2,6 +2,7 @@ using AutoMapper;
 using Granja.Domain.Enums;
 using Granja.Infrastructure.Data;
 using Granja.Infrastructure.Repositories;
+using Granja.Services.Export;
 using Granja.Services.Mapping;
 using Granja.Services.Services;
 using Microsoft.Data.Sqlite;
@@ -30,6 +31,7 @@ public sealed class GranjaTestContext : IDisposable
     public InventarioService Inventario { get; }
     public VentaService Ventas { get; }
     public ReporteService Reportes { get; }
+    public ReporteExportService Exportar { get; }
 
     public GranjaTestContext(int n = 10, decimal l = 15)
     {
@@ -54,6 +56,7 @@ public sealed class GranjaTestContext : IDisposable
         Inventario = new InventarioService(lotes, granjas, uow, Clock, Mapper);
         Ventas = new VentaService(lotes, ventas, granjas, uow, Clock, Mapper);
         Reportes = new ReporteService(ventas, producciones, lotes, vacas, granjas, Mapper);
+        Exportar = new ReporteExportService(Reportes);
     }
 
     /// <summary>Contexto nuevo sobre la misma base: sirve para comprobar lo que realmente quedó guardado.</summary>

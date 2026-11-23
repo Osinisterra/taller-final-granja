@@ -67,9 +67,15 @@ public class VentaService : IVentaService
         return _mapper.Map<VentaResponse>(venta);
     }
 
-    public async Task<IReadOnlyList<VentaResponse>> ListarAsync(DateOnly? desde, DateOnly? hasta, TipoProducto? tipo, CancellationToken ct = default)
+    public async Task<PaginaResponse<VentaResponse>> ListarAsync(FiltroVentasRequest f, CancellationToken ct = default)
     {
-        Validaciones.Rango(desde, hasta);
-        return _mapper.Map<List<VentaResponse>>(await _ventas.BuscarAsync(desde, hasta, tipo, ct));
+        var saltar = Paginador.Salto(f);
+        Validaciones.Rango(f.Desde, f.Hasta);
+        if (f.CantidadMinima > f.CantidadMaxima)
+            throw new DomainException("La cantidad mínima no puede ser mayor que la máxima.");
+
+        var filtro = new FiltroVentas(f.Desde, f.Hasta, f.Tipo, f.CantidadMinima, f.CantidadMaxima, f.OrdenarPor, f.Descendente);
+        var (ventas, total) = await _ventas.BuscarPaginadoAsync(filtro, saltar, f.TamanoPagina, ct);
+        return Paginador.Crear(_mapper.Map<List<VentaResponse>>(ventas), total, f);
     }
 }

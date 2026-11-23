@@ -22,7 +22,7 @@ public class GranjaYVacasTests : IDisposable
     [Fact]
     public async Task VacaRecienRegistrada_TieneProduccionCero()
     {
-        var vacas = await _ctx.Vacas.ListarAsync(false);
+        var vacas = (await _ctx.Vacas.ListarAsync(false, new())).Items;
 
         Assert.Equal(10, vacas.Count);
         Assert.All(vacas, v => Assert.Equal(0, v.LitrosProducidos));
@@ -40,14 +40,14 @@ public class GranjaYVacasTests : IDisposable
 
         Assert.Equal(240, respuesta.ProduccionDiariaEsperada);
         Assert.Equal(8, respuesta.Parametros.Single(p => p.Tipo == TipoProducto.Queso).Rendimiento);
-        Assert.Equal(12, (await _ctx.Vacas.ListarAsync(false)).Count);
+        Assert.Equal(12, (await _ctx.Vacas.ListarAsync(false, new())).TotalRegistros);
 
         var produccion = await _ctx.Produccion.RegistrarProduccionAsync(new RegistrarProduccionRequest { Fecha = Dia(1) });
         Assert.Equal(240, produccion.LitrosProducidos);
 
         await _ctx.Granja.ActualizarAsync(new ActualizarGranjaRequest { NumeroVacas = 5, LitrosPorVaca = 20 });
-        Assert.Equal(5, (await _ctx.Vacas.ListarAsync(false)).Count);
-        Assert.Equal(12, (await _ctx.Vacas.ListarAsync(true)).Count);
+        Assert.Equal(5, (await _ctx.Vacas.ListarAsync(false, new())).TotalRegistros);
+        Assert.Equal(12, (await _ctx.Vacas.ListarAsync(true, new())).TotalRegistros);
     }
 
     [Fact]

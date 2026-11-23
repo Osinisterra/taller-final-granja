@@ -1,4 +1,3 @@
-using Granja.Domain.Enums;
 using Granja.Services.Dtos;
 using Granja.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -26,12 +25,15 @@ public class VentasController : ControllerBase
         return CreatedAtAction(nameof(Obtener), new { id = venta.Id }, venta);
     }
 
-    /// <summary>Lista las ventas filtradas por rango de fechas y tipo.</summary>
+    /// <summary>
+    /// Lista paginada de ventas con filtros avanzados: rango de fechas, tipo, cantidad mínima/máxima
+    /// y orden por Fecha, Cantidad o Total (ascendente o descendente).
+    /// </summary>
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<VentaResponse>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<VentaResponse>>> Listar([FromQuery] DateOnly? desde, [FromQuery] DateOnly? hasta,
-        [FromQuery] TipoProducto? tipo, CancellationToken ct) =>
-        Ok(await _service.ListarAsync(desde, hasta, tipo, ct));
+    [ProducesResponseType<PaginaResponse<VentaResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginaResponse<VentaResponse>>> Listar([FromQuery] FiltroVentasRequest filtro, CancellationToken ct) =>
+        Ok(await _service.ListarAsync(filtro, ct));
 
     /// <summary>Consulta una venta con su detalle por lote.</summary>
     [HttpGet("{id:int}")]

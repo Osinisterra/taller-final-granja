@@ -98,3 +98,6 @@ public class ReporteVacasResponse
     public List<VacaProduccionItem> BajoPromedio { get; set; } = new();
     public List<VacaProduccionItem> Vacas { get; set; } = new();
 }
+
+/// <summary>Archivo generado por una exportación.</summary>
+public record ArchivoExportado(string NombreArchivo, string ContentType, byte[] Contenido);

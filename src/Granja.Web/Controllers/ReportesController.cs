@@ -12,8 +12,28 @@ namespace Granja.Web.Controllers;
 public class ReportesController : ControllerBase
 {
     private readonly IReporteService _service;
+    private readonly IReporteExportService _export;
 
-    public ReportesController(IReporteService service) => _service = service;
+    public ReportesController(IReporteService service, IReporteExportService export)
+    {
+        _service = service;
+        _export = export;
+    }
+
+    /// <summary>
+    /// Exporta un reporte a CSV. Valores de {reporte}: ventas, leche-diaria, producto-diario,
+    /// producto-total, producto-danado, vacas. Acepta los mismos filtros que el reporte en JSON.
+    /// </summary>
+    [HttpGet("{reporte}/csv")]
+    [Produces("text/csv", "application/problem+json")]
+    [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK, "text/csv")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ExportarCsv(string reporte, [FromQuery] DateOnly? desde, [FromQuery] DateOnly? hasta,
+        [FromQuery] TipoProducto? tipo, CancellationToken ct)
+    {
+        var archivo = await _export.ExportarCsvAsync(reporte, desde, hasta, tipo, ct);
+        return File(archivo.Contenido, archivo.ContentType, archivo.NombreArchivo);
+    }
 
     /// <summary>Ventas del período: fecha, producto, cantidad, precio, total y total general.</summary>
     [HttpGet("ventas")]
